@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "crypto": "^1.0.1",
+    "mariadb": "^2.5.5",
+    "mysql": "^2.18.1",
+    "playwright": "^1.16.2",
+    "sequelize": "^6.8.0",
+    "tmp-promise": "^3.0.3",
+    "user-agents": "^1.0.817",
+    "uuid": "^8.3.2"
+  }
+}
