@@ -87,7 +87,6 @@ class UniversityImage extends Model {
 }
 
 UniversityImage.init({
-    
     university_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -99,7 +98,7 @@ UniversityImage.init({
     },
     local_path: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     type: {
         type: DataTypes.STRING,
@@ -111,6 +110,53 @@ UniversityImage.init({
     tableName: 'uni_images'
 });
 
+
+class UniversityDorm extends Model {}
+
+UniversityDorm.init({
+    university_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        unsigned: true,
+    },
+    type: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    rate: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    toilet: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    bathroom: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    internet: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    landline: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    airConditioner: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    comments: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+}, {
+    sequelize,
+    modelName: 'UniversityDorm',
+    tableName: 'uni_dorms'
+});
+
 (async () => {
     try {
         await sequelize.authenticate();
@@ -118,6 +164,8 @@ UniversityImage.init({
         await University.sync();
         await UniversityProgram.sync();
         await UniversityScholarship.sync();
+        await UniversityImage.sync();
+        await UniversityDorm.sync();
     } catch (error) {
         console.error('Unable to connect to the database:', error);
     }
@@ -125,3 +173,6 @@ UniversityImage.init({
 
 module.exports.University = University;
 module.exports.UniversityProgram = UniversityProgram;
+module.exports.UniversityScholarship = UniversityScholarship;
+module.exports.UniversityImage = UniversityImage;
+module.exports.UniversityDorm = UniversityDorm;
