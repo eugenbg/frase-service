@@ -10,17 +10,29 @@ class ParseUniData {
     page = null;
 
     async start() {
+        const startFromUniId = process.argv[2];
+        await this.cleanUp(startFromUniId);
         this.page = await stealth();
-        let unis = await University.findAll({});
-        for (const uni of unis) {
-            const url = this.baseUrl + uni.link;
-            await this.page.goto(url);
-            await this.page.reload();
+        let unis;
+        if(startFromUniId) {
+            unis = await University.findAll({
+                where: {
+                    id: {
+                        [Op.gte]: startFromUniId
+                    }
+                }
+            });
+        } else {
+            unis = await University.findAll();
+        }
 
-            await this.parseUniData(uni);
-            await this.saveLinkedUniScholarships(uni);
-            await this.savePhotos(uni);
-            await this.saveDormRooms(uni);
+        for (const uni of unis) {
+            try {
+                await this.parseOneUni(uni);
+            } catch (e) {
+                await sleep(60000);
+                await this.parseUniData(uni);
+            }
         }
     }
 
@@ -62,7 +74,8 @@ class ParseUniData {
     }
 
     async getPrograms(uni, type = 'Bachelor') {
-        const programElements = await this.page.$$('#ajaxUniversitiesPrograms tr')
+        const programElements = await this.page.$$('#ajaxUniversitiesPrograms tr');
+        const payload = [];
         for (const programElementPromise of programElements) {
             let programNameElement = await (await programElementPromise).$('td >> nth=0');
             let programName = await programNameElement.innerText();
@@ -78,15 +91,17 @@ class ParseUniData {
             let programPriceElement = await (await programElementPromise).$('td >> nth=3');
             let programPrice = await programPriceElement.innerText();
 
-            await (new UniversityProgram({
+            payload.push({
                 'university_id': uni.id,
-                'name': programName,
+                'name': programName.trimLeft().trimRight(),
                 'language': programLanguage,
                 'years': programDuration,
                 'price': programPrice,
                 'type': type,
-            })).save();
+            });
         }
+
+        await UniversityProgram.bulkCreate(payload);
     }
 
     async saveLinkedUniScholarships(uni) {
@@ -107,43 +122,55 @@ class ParseUniData {
 
     async savePhotos(uni) {
         const campusImageElements = await this.page.$$('.campusviev img');
-        let imageModel;
         const path = `${__dirname}/assets/images`;
+        let payload = [];
+        let i = 0;
         for (const imageElementPromise of campusImageElements) {
+            i++;
             const imageElement = await imageElementPromise;
             let url = await imageElement.getAttribute('src');
+            if(url.includes('..')) { continue; }
 
-            imageModel = await (new UniversityImage({
+            const relativePath = `uni-${uni.id}/campus--${i}.${url.split('.').pop()}`
+            let savePath = `${path}/${relativePath}`;
+
+            payload.push({
                 university_id: uni.id,
                 url: url,
-                type: 'campus'
-            })).save();
+                type: 'campus',
+                local_path: relativePath
+            });
 
-            let savePath = `${path}/uni-${uni.id}/campus--${imageModel.id}.${url.split('.').pop()}`;
             await downloadFile(this.baseUrl + url, savePath);
         }
 
-        const dormImageElements = await this.page.$$('.device2 img');
+        await UniversityImage.bulkCreate(payload)
+
+        const dormImageElements = await this.page.$$('.swipera20 .device2 img');
+        i = 0;
+        payload = [];
         for (const imageElementPromise of dormImageElements) {
+            i++;
             const imageElement = await imageElementPromise;
             let url = await imageElement.getAttribute('src');
-
-            imageModel = await (new UniversityImage({
+            const relativePath = `uni-${uni.id}/dorm--${i}.${url.split('.').pop()}`
+            let savePath = `${path}/${relativePath}`;
+            payload.push({
                 university_id: uni.id,
                 url: url,
-                type: 'dorm'
-            })).save();
+                type: 'dorm',
+                local_path: relativePath
+            });
 
-            let savePath = `${path}/uni-${uni.id}/dorm--${imageModel.id}.${url.split('.').pop()}`;
             await downloadFile(this.baseUrl + url, savePath);
         }
-
+        await UniversityImage.bulkCreate(payload)
     }
 
     async saveDormRooms(uni) {
         let dormTableElement = (await this.page.$$('.ph_table'))[1];
         if(!dormTableElement) {
-            await sleep(2000);
+            await sleep(5000);
             dormTableElement = (await this.page.$$('.ph_table'))[1];
         }
 
@@ -189,6 +216,54 @@ class ParseUniData {
             })).save();
         }
 
+    }
+
+    async cleanUp(startFromUniId) {
+        if(startFromUniId) {
+            await UniversityDorm.destroy({
+                where: {
+                    university_id: {
+                        [Op.gte]: startFromUniId
+                    }
+                }
+            });
+
+            await UniversityImage.destroy({
+                where: {
+                    university_id: {
+                        [Op.gte]: startFromUniId
+                    }
+                }
+            });
+
+            await UniversityProgram.destroy({
+                where: {
+                    university_id: {
+                        [Op.gte]: startFromUniId
+                    }
+                }
+            });
+
+            await UniversityScholarship.destroy({
+                where: {
+                    university_id: {
+                        [Op.gte]: startFromUniId
+                    }
+                }
+            });
+
+        }
+    }
+
+    async parseOneUni(uni) {
+        const url = this.baseUrl + uni.link;
+        await this.page.goto(url);
+        await this.page.reload();
+
+        await this.parseUniData(uni);
+        await this.saveLinkedUniScholarships(uni);
+        await this.savePhotos(uni);
+        await this.saveDormRooms(uni);
     }
 }
 

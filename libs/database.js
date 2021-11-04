@@ -124,7 +124,7 @@ UniversityDorm.init({
         allowNull: false
     },
     rate: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         allowNull: true
     },
     toilet: {
