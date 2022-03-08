@@ -1,178 +1,67 @@
 const { Sequelize, DataTypes, Model} = require('sequelize');
 
-const sequelize = new Sequelize('csc', 'eugen', 'password', {
+const sequelize = new Sequelize('frase', 'eugen', 'password', {
     host: 'localhost',
     dialect: 'mariadb'
 });
 
-class University extends Model {}
+class Keyword extends Model {}
 
-University.init({
-    name: {
+Keyword.init({
+    keyword: {
         type: DataTypes.STRING,
         allowNull: false
-    },
-    region: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    link: {
-        type: DataTypes.STRING
-    }
-}, {
-    sequelize,
-    modelName: 'University'
-});
-
-
-class UniversityProgram extends Model {}
-
-UniversityProgram.init({
-    university_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        unsigned: true,
     },
     type: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    name: {
+    country: {
         type: DataTypes.STRING,
         allowNull: false
-    },
-    language: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    years: {
-        type: DataTypes.DECIMAL,
-    },
-    price: {
-        type: DataTypes.INTEGER,
     },
 }, {
-    
+    timestamps: false,
     sequelize,
-    modelName: 'UniversityProgram',
-    tableName: 'uni_programs'
+    modelName: 'Keyword',
+    tableName: 'keywords'
 });
 
-class UniversityScholarship extends Model {}
 
-UniversityScholarship.init({
-    
-    university_id: {
+class Piece extends Model {}
+
+Piece.init({
+    keyword_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         unsigned: true,
     },
-    name: {
+    heading: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    link: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-}, {
-    sequelize,
-    modelName: 'UniversityScholarship',
-    tableName: 'uni_scholarships'
-});
-
-class UniversityImage extends Model {
-    TYPE_CAMPUS = 'campus';
-    TYPE_DORM = 'dorm';
-}
-
-UniversityImage.init({
-    university_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        unsigned: true,
-    },
-    url: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    local_path: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    type: {
-        type: DataTypes.STRING,
+    content: {
+        type: DataTypes.TEXT,
         allowNull: false
     },
 }, {
+    timestamps: false,
     sequelize,
-    modelName: 'UniversityImage',
-    tableName: 'uni_images'
-});
-
-
-class UniversityDorm extends Model {}
-
-UniversityDorm.init({
-    university_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        unsigned: true,
-    },
-    type: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    rate: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    toilet: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    bathroom: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    internet: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    landline: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    airConditioner: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    comments: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-}, {
-    sequelize,
-    modelName: 'UniversityDorm',
-    tableName: 'uni_dorms'
+    modelName: 'Piece',
+    tableName: 'pieces'
 });
 
 (async () => {
     try {
         await sequelize.authenticate();
         console.log('DB Connection has been established successfully.');
-        await University.sync();
-        await UniversityProgram.sync();
-        await UniversityScholarship.sync();
-        await UniversityImage.sync();
-        await UniversityDorm.sync();
+        await Keyword.sync();
+        await Piece.sync();
     } catch (error) {
         console.error('Unable to connect to the database:', error);
     }
 })();
 
-module.exports.University = University;
-module.exports.UniversityProgram = UniversityProgram;
-module.exports.UniversityScholarship = UniversityScholarship;
-module.exports.UniversityImage = UniversityImage;
-module.exports.UniversityDorm = UniversityDorm;
+module.exports.Keyword = Keyword;
+module.exports.Piece = Piece;
+module.exports.sequelize = sequelize;
