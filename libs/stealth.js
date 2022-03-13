@@ -360,6 +360,11 @@ async function cloak(page, fingerprint, {
 
 
 async function stealth() {
+
+    let pathArr = __dirname.split('/');
+    pathArr.pop();
+    let extPath = pathArr.join('/') + '/extensions/toolsurf';
+
     const args = [
         '--no-sandbox',
         '--remote-debugging-port=9222',
@@ -367,6 +372,8 @@ async function stealth() {
         '--ignore-certificate-errors',
         '--disk-cache-size=1',
         '--disable-infobars',
+        `--disable-extensions-except=${extPath}`,
+        `--load-extension=${extPath}`,
     ];
     const o = await tmp.dir({
         unsafeCleanup: true,
@@ -385,6 +392,9 @@ async function stealth() {
     // generate a fingerprint
     const fingerprint = await getBrowserfingerprint(uuid.v4());
     let page = await browser.newPage();
+    const backgroundPages = browser.backgroundPages();
+    const url = backgroundPages[0].url();
+    const [, , extensionId] = url.split('/');
 
     // "cloak" our page with evasions
     await cloak(page, fingerprint);
