@@ -36,9 +36,19 @@ Piece.init({
         allowNull: false,
         unsigned: true,
     },
+    serp_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        unsigned: true,
+    },
     heading: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    position: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        unsigned: true,
     },
     content: {
         type: DataTypes.TEXT,
@@ -49,6 +59,41 @@ Piece.init({
     sequelize,
     modelName: 'Piece',
     tableName: 'pieces'
+});
+
+class Serp extends Model {}
+
+Serp.init({
+    keyword_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        unsigned: true,
+    },
+    position: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        unsigned: true,
+    },
+    links: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        unsigned: true,
+    },
+    da: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        unsigned: true,
+    },
+    url: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+        unsigned: true,
+    },
+}, {
+    timestamps: false,
+    sequelize,
+    modelName: 'Serp',
+    tableName: 'serps'
 });
 
 (async () => {
@@ -64,4 +109,5 @@ Piece.init({
 
 module.exports.Keyword = Keyword;
 module.exports.Piece = Piece;
+module.exports.Serp = Serp;
 module.exports.sequelize = sequelize;
