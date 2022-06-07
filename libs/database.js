@@ -89,6 +89,11 @@ Serp.init({
         allowNull: false,
         unsigned: true,
     },
+    title: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+        unsigned: true,
+    },
 }, {
     timestamps: false,
     sequelize,
